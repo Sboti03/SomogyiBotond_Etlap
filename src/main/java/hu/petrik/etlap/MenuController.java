@@ -15,8 +15,8 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Calendar;
 import java.util.List;
+import java.util.Scanner;
 
 public class MenuController extends Controller {
 
@@ -103,6 +103,7 @@ public class MenuController extends Controller {
         stage.setOnHidden(event -> {
             try {
                 loadMenuTable();
+                loadCategoryTable();
             } catch (SQLException e) {
                 error("Nem sikerült betölteni az adatokat", e.getMessage());
             }
@@ -146,7 +147,7 @@ public class MenuController extends Controller {
 
         int selectedIndex = menuTable.getSelectionModel().getSelectedIndex();
         if (selectedIndex == -1) {
-            if (!incrementAsk("Biztos szeretnéd növelni az összes termék árát?")) {
+            if (!confirmation("Biztos szeretnéd növelni az összes termék árát?", "")) {
                 return;
             }
             try {
@@ -156,7 +157,7 @@ public class MenuController extends Controller {
             }
         } else {
             Meal selectedMeal = menuTable.getSelectionModel().getSelectedItem();
-            if (!incrementAsk("Biztos szeretnéd növelni a(z) " + selectedMeal.getName() + " árát?")) {
+            if (!confirmation("Biztos szeretnéd növelni a(z) " + selectedMeal.getName() + " árát?", "")) {
                 return;
             }
             try {
@@ -174,17 +175,7 @@ public class MenuController extends Controller {
 
     }
 
-    private boolean incrementAsk(String text) {
-        boolean result = false;
-        Alert alert = new Alert(Alert.AlertType.INFORMATION, text,
-                ButtonType.YES, ButtonType.NO);
-        alert.setHeaderText("");
-        alert.showAndWait();
-        if (alert.getResult() == ButtonType.YES) {
-            result = true;
-        }
-        return result;
-    }
+
 
     @FXML
     public void priceIncreaseMoneyClick(ActionEvent actionEvent) {
@@ -196,7 +187,7 @@ public class MenuController extends Controller {
 
         int selectedIndex = menuTable.getSelectionModel().getSelectedIndex();
         if (selectedIndex == -1) {
-            if (!incrementAsk("Biztos szeretnéd növelni az összes termék árát?")) {
+            if (!confirmation("Biztos szeretnéd növelni az összes termék árát?", "")) {
                 return;
             }
             try {
@@ -206,7 +197,7 @@ public class MenuController extends Controller {
             }
         } else {
             Meal selectedMeal = menuTable.getSelectionModel().getSelectedItem();
-            if (!incrementAsk("Biztos szeretnéd növelni a(z) " + selectedMeal.getName() + " árát?")) {
+            if (!confirmation("Biztos szeretnéd növelni a(z) " + selectedMeal.getName() + " árát?", "")) {
                 return;
             }
             try {
@@ -235,10 +226,46 @@ public class MenuController extends Controller {
     }
 
     public void insertCategoryClick(ActionEvent actionEvent) {
-
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("category-insert-view.fxml"));
+            Scene scene = new Scene(fxmlLoader.load());
+            Stage stage = new Stage();
+            stage.setScene(scene);
+            stage.setTitle("Kategória hozzá adás");
+            showStage(stage);
+        } catch (Exception e) {
+            error("Hiba", e.getMessage());
+        }
     }
 
     public void deleteCategoryClick(ActionEvent actionEvent) {
+        int selectedIndex = categoryListView.getSelectionModel().getSelectedIndex();
+        if (selectedIndex == -1) {
+            warning("Nincs kiválasztva elem", "A törléshez előbb válasszon ki egy elemet");
+            return;
+        }
+
+        MealCategory category = categoryListView.getSelectionModel().getSelectedItem();
+
+        if (!confirmation("Biztos szeretnéd törölni a(z) " + category.getNev() + " kategóriát?", "")) {
+            return;
+        }
+
+        try {
+            if (menuDB.deleteCategory(category)) {
+                information("Sikeres törlés");
+            } else {
+                warning("Sikertelen törlés");
+            }
+        } catch (SQLException e) {
+            error("Sikertelen törlés", e.getMessage());
+        }
+        try {
+            loadCategoryTable();
+            loadMenuTable();
+        } catch (SQLException e) {
+            error("Nem sikert kapcsolódni az adatbázishoz", e.getMessage());
+        }
 
     }
 }

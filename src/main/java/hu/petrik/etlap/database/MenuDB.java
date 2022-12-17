@@ -53,8 +53,8 @@ public class MenuDB {
         String name = result.getString("nev");
         String description = result.getString("leiras");
         int price = result.getInt("ar");
-            String category = result.getString("kategoria");
-        return new Meal(id,name, new MealCategory(category), description,price);
+        String category = result.getString("kategoria");
+        return new Meal(id, name, new MealCategory(category), description, price);
     }
 
     public List<MealCategory> getCategories() throws SQLException {
@@ -120,7 +120,29 @@ public class MenuDB {
             statement.setInt(2, id);
         }
         return statement.executeUpdate() >= 1;
+    }
 
+    public boolean deleteCategory(MealCategory category) throws SQLException {
+        modifyCategory(category, new MealCategory(0, ""));
+        String sql = "DELETE FROM kategoria WHERE id = ?";
+        PreparedStatement statement = conn.prepareStatement(sql);
+        statement.setInt(1, category.getId());
+        return statement.executeUpdate() >= 1;
+    }
+
+    public boolean modifyCategory(MealCategory oldCategory, MealCategory newCategory) throws SQLException {
+        String sql = "UPDATE etlap SET kategoria_id = ? WHERE kategoria_id = ?";
+        PreparedStatement statement = conn.prepareStatement(sql);
+        statement.setInt(1, newCategory.getId());
+        statement.setInt(2, oldCategory.getId());
+        return statement.executeUpdate() >= 1;
+    }
+
+    public boolean insertCategory(MealCategory category) throws SQLException {
+        String sql = "INSERT INTO kategoria (nev) VALUES (?)";
+        PreparedStatement statement = conn.prepareStatement(sql);
+        statement.setString(1, category.getNev());
+        return statement.executeUpdate() >= 1;
     }
 
 }

@@ -37,6 +37,7 @@ public class MealInsertController extends Controller {
                 for (MealCategory category : categories) {
                     categoryChoiceBox.getItems().add(category);
                 }
+                categoryChoiceBox.setValue(categories.get(0));
             } catch (SQLException e) {
                 error("Nem sikert csatlakozni az adatbázishoz", e.getMessage());
             }
@@ -62,7 +63,7 @@ public class MealInsertController extends Controller {
                 nameInput.setText("");
                 descriptionInput.setText("");
                 priceSpinner.getValueFactory().setValue(0);
-                categoryChoiceBox.setValue(null);
+                categoryChoiceBox.setValue(categoryChoiceBox.getItems().get(0));
             } else {
                 error("Sikertelen felvétel", "ERROR 404");
             }
