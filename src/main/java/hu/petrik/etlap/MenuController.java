@@ -23,6 +23,8 @@ import java.util.List;
 public class MenuController extends Controller {
 
     @FXML
+    private TabPane rootView;
+    @FXML
     private ListView<MealCategory> categoryListView;
     @FXML
     private GridPane categoryGridPane;
@@ -59,17 +61,16 @@ public class MenuController extends Controller {
         Platform.runLater(() -> {
             try {
                 menuDB = new MenuDB();
-                loadMenuTable();
-                loadCategoryTable();
-                loadCategoryFilters();
+                loadData();
             } catch (SQLException e) {
-                error("Hiba a szerverre való kapcsolódás közben", e.getMessage());
+                error("Nem sikerült kapcsolódni a szerverre", e.getMessage());
                 Platform.exit();
             }
         });
     }
 
     private void loadCategoryFilters() throws SQLException {
+        categoryGridPane.getChildren().clear();
         List<MealCategory> categories = menuDB.getCategories();
         int colCount = 0;
         int rowCount = 0;
@@ -100,8 +101,6 @@ public class MenuController extends Controller {
     }
 
 
-
-
     private void loadMenuTable() throws SQLException {
         menuTable.getItems().clear();
         descriptionField.setText("");
@@ -119,6 +118,25 @@ public class MenuController extends Controller {
         }
     }
 
+    private void showStage(Stage stage) {
+        rootView.setDisable(true);
+        stage.show();
+        stage.setOnHidden(event -> {
+            loadData();
+            rootView.setDisable(false);
+        });
+    }
+
+    private void loadData() {
+        try {
+            loadMenuTable();
+            loadCategoryFilters();
+            loadCategoryTable();
+        } catch (SQLException e) {
+            error("Hiba az adatok betöltése közben", e.getMessage());
+            Platform.exit();
+        }
+    }
 
     @FXML
     public void insertBtnClick(ActionEvent actionEvent) {
@@ -136,41 +154,25 @@ public class MenuController extends Controller {
 
     }
 
-    private void showStage(Stage stage) {
-        stage.show();
-        stage.setOnHidden(event -> {
-            try {
-                loadMenuTable();
-                loadCategoryTable();
-            } catch (SQLException e) {
-                error("Nem sikerült betölteni az adatokat", e.getMessage());
-            }
-        });
-    }
-
     @FXML
     public void deleteBtnClick(ActionEvent actionEvent) {
 
         int selectedIndex = menuTable.getSelectionModel().getSelectedIndex();
-        if (selectedIndex != -1) {
+        if (selectedIndex == -1) {
             warning("Előbb válassz ki egy elemet!");
             return;
-
         }
 
         Meal selected = menuTable.getSelectionModel().getSelectedItem();
-        Alert confirmDelete = new Alert(Alert.AlertType.CONFIRMATION, "Biztos törölni akarod a(z) "
-                + selected.getName() + " nevű ételt?", ButtonType.YES, ButtonType.NO);
-        confirmDelete.showAndWait();
-        if (confirmDelete.getResult() == ButtonType.YES) {
+        if (confirmation("Biztos törölni akarod a(z) " + selected.getName() + " nevű ételt?", "")) {
             try {
                 if (!menuDB.deleteMeal(selected.getId())) {
                     error("Sikertelen törlés");
-                } else {
-                    loadMenuTable();
+                    return;
                 }
+                loadData();
             } catch (SQLException e) {
-                error("Hiba", e.getMessage());
+                error("Hiba a törlés közben", e.getMessage());
             }
         }
     }
@@ -205,14 +207,8 @@ public class MenuController extends Controller {
             }
 
         }
-        try {
-            loadMenuTable();
-        } catch (SQLException e) {
-            error("Nem sikerült újra betölteni az adatbázist", e.getMessage());
-        }
-
+        loadData();
     }
-
 
 
     @FXML
@@ -244,11 +240,7 @@ public class MenuController extends Controller {
                 error("Nem sikerült növelni", e.getMessage());
             }
         }
-        try {
-            loadMenuTable();
-        } catch (SQLException e) {
-            error("Nem sikerült újra betölteni az adatbázist", e.getMessage());
-        }
+        loadData();
     }
 
 
@@ -298,12 +290,6 @@ public class MenuController extends Controller {
         } catch (SQLException e) {
             error("Sikertelen törlés", e.getMessage());
         }
-        try {
-            loadCategoryTable();
-            loadMenuTable();
-        } catch (SQLException e) {
-            error("Nem sikert kapcsolódni az adatbázishoz", e.getMessage());
-        }
-
+        loadData();
     }
 }

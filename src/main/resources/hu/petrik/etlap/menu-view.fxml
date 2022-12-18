@@ -16,7 +16,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<TabPane xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="hu.petrik.etlap.MenuController">
+<TabPane fx:id="rootView" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="hu.petrik.etlap.MenuController">
    <tabs>
       <Tab closable="false" text="Étlap">
          <content>
