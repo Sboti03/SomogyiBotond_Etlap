@@ -38,6 +38,25 @@ public class MenuDB {
 
     }
 
+    public List<Meal> getFilteredMenu(List<MealCategory> categories) throws SQLException {
+        if (categories.size() == 0) {
+            return getMenu();
+        }
+        String sql = "SELECT etlap.id, etlap.nev, etlap.leiras, etlap.ar, kategoria.nev AS kategoria " +
+                "FROM etlap INNER JOIN kategoria ON etlap.kategoria_id = kategoria.id AND etlap.kategoria_id = ?;";
+        PreparedStatement statement = conn.prepareStatement(sql);
+        List<Meal> menu = new ArrayList<>();
+        for (MealCategory category : categories) {
+            statement.setInt(1, category.getId());
+            ResultSet results = statement.executeQuery();
+            while (results.next()) {
+                menu.add(getAMeal(results));
+            }
+        }
+        return menu;
+
+    }
+
     public Meal getMealById(int id) throws SQLException {
         String sql = "SELECT * FROM etlap WHERE id = ?";
 

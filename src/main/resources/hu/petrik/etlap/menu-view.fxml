@@ -12,6 +12,7 @@
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
@@ -28,8 +29,8 @@
                      <children>
                         <HBox prefWidth="200.0" spacing="10.0">
                            <children>
-                              <Button fx:id="insertBtn" mnemonicParsing="false" onAction="#insertBtnClick" text="Új felvétel" />
-                              <Button fx:id="deleteBtn" mnemonicParsing="false" onAction="#deleteBtnClick" text="Törlés" />
+                              <Button mnemonicParsing="false" onAction="#insertBtnClick" text="Új felvétel" />
+                              <Button mnemonicParsing="false" onAction="#deleteBtnClick" text="Törlés" />
                            </children>
                         </HBox>
                         <TitledPane alignment="TOP_LEFT" animated="false" text="Áremelés">
@@ -59,6 +60,13 @@
                                     </VBox>
                                  </children>
                               </AnchorPane>
+                           </content>
+                        </TitledPane>
+                        <TitledPane maxWidth="1.7976931348623157E308" text="Kategória szűrés">
+                           <content>
+                              <GridPane fx:id="categoryGridPane" hgap="10.0" vgap="10.0">
+
+                              </GridPane>
                            </content>
                         </TitledPane>
                         <TableView fx:id="menuTable" maxHeight="200.0" minHeight="300.0" onMouseClicked="#mealSelectClick" prefHeight="200.0">

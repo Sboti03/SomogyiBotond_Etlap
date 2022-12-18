@@ -5,26 +5,27 @@ import hu.petrik.etlap.database.MealCategory;
 import hu.petrik.etlap.database.MenuDB;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 public class MenuController extends Controller {
 
-    public ListView<MealCategory> categoryListView;
     @FXML
-    private Button insertBtn;
+    private ListView<MealCategory> categoryListView;
     @FXML
-    private Button deleteBtn;
+    private GridPane categoryGridPane;
     @FXML
     private Spinner<Integer> priceIncreasePercentSpinner;
     @FXML
@@ -41,6 +42,7 @@ public class MenuController extends Controller {
     private TextArea descriptionField;
 
     private MenuDB menuDB;
+    private List<MealCategory> selectedCategories;
 
     @FXML
     private void initialize() {
@@ -52,11 +54,14 @@ public class MenuController extends Controller {
         categoryCol.setCellValueFactory(new PropertyValueFactory<>("category"));
         priceCol.setCellValueFactory(new PropertyValueFactory<>("price"));
 
+        selectedCategories = new ArrayList<>();
+
         Platform.runLater(() -> {
             try {
                 menuDB = new MenuDB();
                 loadMenuTable();
                 loadCategoryTable();
+                loadCategoryFilters();
             } catch (SQLException e) {
                 error("Hiba a szerverre való kapcsolódás közben", e.getMessage());
                 Platform.exit();
@@ -64,10 +69,43 @@ public class MenuController extends Controller {
         });
     }
 
+    private void loadCategoryFilters() throws SQLException {
+        List<MealCategory> categories = menuDB.getCategories();
+        int colCount = 0;
+        int rowCount = 0;
+        for (int i = 0; i < categories.size(); i++) {
+            MealCategory category = categories.get(i);
+            CheckBox checkBox = new CheckBox(category.getNev());
+
+            checkBox.setOnAction(actionEvent -> {
+                if (checkBox.isSelected()) {
+                    selectedCategories.add(category);
+                } else {
+                    selectedCategories.remove(category);
+                }
+                try {
+                    loadMenuTable();
+                } catch (SQLException e) {
+                    error("Hiba az adatbázis betöltése közben", e.getMessage());
+                }
+            });
+            categoryGridPane.add(checkBox, colCount, rowCount);
+            if (colCount == 4) {
+                rowCount++;
+                colCount = 0;
+            } else {
+                colCount++;
+            }
+        }
+    }
+
+
+
+
     private void loadMenuTable() throws SQLException {
         menuTable.getItems().clear();
         descriptionField.setText("");
-        List<Meal> menu = menuDB.getMenu();
+        List<Meal> menu = menuDB.getFilteredMenu(selectedCategories);
         for (Meal meal : menu) {
             menuTable.getItems().add(meal);
         }
